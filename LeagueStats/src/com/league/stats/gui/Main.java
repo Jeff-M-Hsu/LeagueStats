@@ -12,8 +12,8 @@ public class Main {
 			java.util.logging.Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(java.util.logging.Level.OFF);
 		    java.util.logging.Logger.getLogger("org.apache.http").setLevel(java.util.logging.Level.OFF);
 			WebClient client = new WebClient(BrowserVersion.CHROME);
-			client.getOptions().setJavaScriptEnabled(false);
-			SearchForm search = new SearchForm("tarzaned2");
+			client.getOptions().setJavaScriptEnabled(true);
+			SearchForm search = new SearchForm("rainbrain");
 			search.SummonerSearch(client);
 	}
 }
