@@ -13,7 +13,9 @@ public class Main {
 		    java.util.logging.Logger.getLogger("org.apache.http").setLevel(java.util.logging.Level.OFF);
 			WebClient client = new WebClient(BrowserVersion.CHROME);
 			client.getOptions().setJavaScriptEnabled(true);
-			SearchForm search = new SearchForm("rainbrain");
-			search.SummonerSearch(client);
+			SearchForm search = new SearchForm("ROFLMFAO LOL");
+			search.summonerSearch(client);
+			search.liveGameSearch(client);
+			client.close();
 	}
 }
