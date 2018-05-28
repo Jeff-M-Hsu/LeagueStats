@@ -13,9 +13,10 @@ public class Main {
 		    java.util.logging.Logger.getLogger("org.apache.http").setLevel(java.util.logging.Level.OFF);
 			WebClient client = new WebClient(BrowserVersion.CHROME);
 			client.getOptions().setJavaScriptEnabled(true);
-			SearchForm search = new SearchForm("ROFLMFAO LOL");
+			SearchForm search = new SearchForm("vladimis");
 			search.summonerSearch(client);
 			search.liveGameSearch(client);
+			search.championAutoSearch(client);
 			client.close();
 	}
 }
