@@ -25,37 +25,50 @@ public class SearchForm {
 	public SearchForm(String searchQuery) {
 		name = searchQuery;
 	}
-	
-	public void summonerSearch(WebClient client) throws FailingHttpStatusCodeException, MalformedURLException, IOException {
+
+	public void summonerSearch(WebClient client){
 		
-		//Opens home page
-		HtmlPage page = client.getPage("http://na.op.gg/");
+		try {
+			//Opens home page
+			HtmlPage page;
+			page = client.getPage("http://na.op.gg/");
 
-		//Gets element for search bar
-		HtmlForm searchBar = page.getFirstByXPath("//form[contains(@class, 'summoner-search-form')]");
+			//Gets element for search bar
+			HtmlForm searchBar = page.getFirstByXPath("//form[contains(@class, 'summoner-search-form')]");
 
-		//Enters specified name
-		searchBar.getInputByName("userName").setValueAttribute(name);
+			//Enters specified name
+			searchBar.getInputByName("userName").setValueAttribute(name);
 
-		//Create virtual button and click
-		HtmlButton submitButton = (HtmlButton)page.createElement("button");
-		submitButton.setAttribute("type", "submit");
-		searchBar.appendChild(submitButton);
-		profilePage = submitButton.click();
+			//Create virtual button and click
+			HtmlButton submitButton = (HtmlButton)page.createElement("button");
+			submitButton.setAttribute("type", "submit");
+			searchBar.appendChild(submitButton);
+			profilePage = submitButton.click();
 
-		//Updates profile with the Update button for latest stats
-		HtmlButton updateProfile = (HtmlButton)profilePage.getElementById("SummonerRefreshButton");
-		updateProfile.click();
+			//Updates profile with the Update button for latest stats
+			HtmlButton updateProfile = (HtmlButton)profilePage.getElementById("SummonerRefreshButton");
+			updateProfile.click();
 
-		//Fixes capitalization issues if there are any
-		//Names of pro players and famous streamers sometimes have 2 name elements
-		//which aren't always the same, this gets their summoner name
-		List<HtmlElement> summonerName = profilePage.getByXPath("//span[@class='Name']");
-		name = summonerName.get(summonerName.size()-1).asText();
+			//Fixes capitalization issues if there are any
+			//Names of pro players and famous streamers sometimes have 2 name elements
+			//which aren't always the same, this gets their summoner name
+			List<HtmlElement> summonerName = profilePage.getByXPath("//span[@class='Name']");
+			name = summonerName.get(summonerName.size()-1).asText();
+			
+		} catch (FailingHttpStatusCodeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void getProfileInfo() {
-		
+
 		//Gets level of summoner
 		DomElement levelElement = profilePage.getFirstByXPath("//div[@class='ProfileIcon']");
 		String level = levelElement.getLastElementChild().asText();
@@ -68,7 +81,7 @@ public class SearchForm {
 		if(!league.equals("Unranked")) {
 			lp = " (" + leagueLP.getTextContent().replaceAll("[\\n\\t]+", "") + ")";
 		}
-		
+
 		//Gets league of summoner last time they placed in a season
 		DomElement pastLeagueElement = profilePage.getFirstByXPath("//ul[@class='PastRankList']");
 		String lastSeasonRank = "";
@@ -83,14 +96,14 @@ public class SearchForm {
 		System.out.println("Previous Placement: " + lastSeasonRank + "\n");
 	}
 
-	public void liveGameSearch() throws IOException, NullPointerException {
-		
+	public void liveGameSearch(){
+
 		try {
 			//Clicks the "Live Game" button
 			HtmlAnchor livePageAnchor = profilePage.getFirstByXPath("//a[@class='SpectateTabButton']");
 			livePage = livePageAnchor.click();
 			//Wait for javascript to load on page
-			Thread.sleep(10000);
+			Thread.sleep(8000);
 
 			//Gets names, ranks, W/L ratio of all players in the game
 			List<HtmlElement> names = livePage.getByXPath("//a[@class='SummonerName']");
@@ -122,8 +135,8 @@ public class SearchForm {
 		}
 	}
 
-	public void championAutoSearch(WebClient client) throws FailingHttpStatusCodeException, MalformedURLException, IOException{
-		
+	public void championAutoSearch(WebClient client) {
+
 		try {
 			//Detects the champion you are using and looks up its op.gg page
 			HtmlTableRow select = livePage.getFirstByXPath("//tr[td/a[text()='"+name+"']]");
@@ -137,27 +150,28 @@ public class SearchForm {
 			System.out.println("Level:\t" + skillTable[0].asText());
 			System.out.println("Skill:\t" + skillTable[1].asText());
 			//System.out.println(championPage.asText());
-			
 		} catch (FailingHttpStatusCodeException e) {
 			e.printStackTrace();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 
-	private HtmlTableRow[] skillBuild(HtmlPage page) {
-		
+	private HtmlTableRow[] skillBuild(HtmlPage page) throws InterruptedException {
+		Thread.sleep(2000);
 		//Gets table rows of recommended skill build
 		HtmlTableRow levels = (HtmlTableRow)championPage.getByXPath("//table[@class='champion-skill-build__table']/tbody/tr").get(0);
 		HtmlTableRow skills = (HtmlTableRow)championPage.getByXPath("//table[@class='champion-skill-build__table']/tbody/tr").get(1);
 		HtmlTableRow[] table = {levels, skills};
 		return table;
 	}
-	
+
 	private List<HtmlElement> itemList(WebClient client) throws FailingHttpStatusCodeException, MalformedURLException, ElementNotFoundException, IOException{
-		
+
 		//Open champion's recommended items list
 		HtmlPage itemPage = client.getPage("http://na.op.gg" + championPage.getAnchorByText("Items").getAttribute("href"));
 		List<HtmlElement> items = itemPage.getByXPath("//div[@class='champion-stats__single__item']/span");
